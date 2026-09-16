@@ -1,196 +1,255 @@
 import streamlit as st
 import random
-import time
 
-# 1. 페이지 설정 (제목, 이모지, 레이아웃)
+# 1. 페이지 설정
 st.set_page_config(
-    page_title="💖 뽀짝MBTI의 비밀 여행 가방 🧳",
-    page_icon="🔮",
+    page_title="💖 내가 치이카와 캐릭터라면? 💖",
+    page_icon="🐥",
     layout="centered"
 )
 
-# 2. 커스텀 CSS (귀엽고 깜찍한 파스텔 감성 + 카드 애니메이션)
+# 2. 큐티 파스텔 디자인 (CSS)
 st.markdown("""
 <style>
-    /* 전체 배경 그라데이션 및 폰트 */
     .stApp {
-        background: linear-gradient(135deg, #FFF0F5 0%, #E6E6FA 100%);
-        font-family: 'Comic Sans MS', 'Chalkboard SE', 'Nanum Gothic', sans-serif;
+        background-color: #FFF9FB;
+        font-family: 'Nanum Gothic', sans-serif;
     }
     
-    /* 제목 타이틀 스타일링 */
     .title-box {
         text-align: center;
         background: white;
-        padding: 20px;
+        padding: 25px;
         border-radius: 30px;
-        box-shadow: 0px 8px 20px rgba(255, 182, 193, 0.4);
+        box-shadow: 0px 8px 20px rgba(255, 192, 203, 0.4);
         border: 3px dashed #FFB6C1;
-        margin-bottom: 25px;
+        margin-bottom: 30px;
     }
     
-    .title-text {
-        color: #FF1493;
-        font-size: 2.2rem;
+    .main-title {
+        color: #FF69B4;
+        font-size: 2.1rem;
         font-weight: 900;
         margin: 0;
     }
     
-    .sub-text {
-        color: #8A2BE2;
-        font-size: 1rem;
-        margin-top: 5px;
-    }
-
-    /* 선택 상자 및 라벨 */
-    .stSelectbox label {
-        color: #FF69B4 !important;
-        font-size: 1.2rem !important;
-        font-weight: bold;
-    }
-
-    /* 핑크 둥글둥글 버튼 */
-    div.stButton > button {
-        width: 100%;
-        background: linear-gradient(90deg, #FFB6C1, #FF69B4);
-        color: white !important;
-        border-radius: 25px !important;
-        border: none !important;
-        padding: 15px 30px !important;
-        font-size: 1.3rem !important;
-        font-weight: bold !important;
-        box-shadow: 0px 5px 15px rgba(255, 105, 180, 0.4);
-        transition: all 0.3s ease;
-    }
-    
-    div.stButton > button:hover {
-        transform: scale(1.03);
-        box-shadow: 0px 8px 25px rgba(255, 105, 180, 0.6);
-    }
-
-    /* 추천 결과 카드 */
     .result-card {
         background: white;
         border-radius: 25px;
-        padding: 25px;
-        margin-top: 20px;
-        border: 4px solid #FFC0CB;
+        padding: 30px;
+        border: 3px solid #FFC0CB;
         box-shadow: 0 10px 25px rgba(0,0,0,0.08);
         text-align: center;
     }
 
-    .place-title {
-        color: #FF1493;
-        font-size: 1.8rem;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
-
-    .desc-text {
-        color: #4A4A4A;
-        font-size: 1.1rem;
-        line-height: 1.6;
-        background: #FFF5F7;
-        padding: 15px;
-        border-radius: 15px;
-        margin: 15px 0;
-    }
-
-    /* 정보 태그 바 */
-    .tag-container {
-        display: flex;
-        justify-content: space-around;
-        margin-top: 15px;
-    }
-
-    .tag {
-        background: #E6E6FA;
-        color: #4B0082;
-        padding: 8px 15px;
-        border-radius: 20px;
-        font-weight: bold;
-        font-size: 0.9rem;
+    div.stButton > button {
+        width: 100%;
+        background: linear-gradient(90deg, #FFB6C1, #FF69B4);
+        color: white !important;
+        border-radius: 20px !important;
+        border: none !important;
+        padding: 15px 20px !important;
+        font-size: 1.3rem !important;
+        font-weight: bold !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# 3. 데이터베이스 (MBTI + 여행지 + 메이트 + 럭키아이템 + 추천 BGM)
-mbti_db = {
-    "ISTJ": {"place": "경주 황리단길 & 정갈한 유적지", "emoji": "🏯", "desc": "계획표대로 딱딱 맞춰 걷는 완벽하고 안락한 시간! 밤엔 동궁과 월지 야경으로 고요하게 감성 충전 🌙", "mate": "ESFP", "item": "⏱️ 탁상용 시계", "bgm": "🎧 피아노 소나타 모음집"},
-    "ISFJ": {"place": "전주 한옥마을 다도 체험", "emoji": "🍵", "desc": "따스한 툇마루에 앉아 따뜻한 차 한 잔! 소중한 사람들과 도란도란 정다운 추억 쌓기 🍡", "mate": "ESTP", "item": "🍵 따뜻한 보온병", "bgm": "🎧 잔잔한 어쿠스틱 기타"},
-    "INFJ": {"place": "스위스 인터라켄 동화 마을", "emoji": "🏔️", "desc": "눈앞에 펼쳐진 동화 같은 자연! 복잡한 생각은 지우고 웅장한 대자연 속에서 사색에 잠겨보세요 🌲", "mate": "ENFP", "item": "📓 일기장과 펜", "bgm": "🎧 지브리 오케스트라"},
-    "INTJ": {"place": "영국 런던의 대형 박물관 투어", "emoji": "🏛️", "desc": "지적 호기심을 200% 충전하는 지식 탐험! 거대한 역사의 숨결을 차분하게 느낄 수 있는 오붓한 도시 🇬🇧", "mate": "ENTP", "item": "🎧 노이즈 캔슬링 헤드폰", "bgm": "🎧 클래식 체로 소나타"},
-    "ISTP": {"place": "뉴질랜드 퀸스타운 번지점프", "emoji": "🪂", "desc": "백마디 말보다 직접 몸으로 느끼는 스릴! 답답함 싹 날려버리는 아드레날린 뿜뿜 액티비티 🇳🇿", "mate": "ESFJ", "item": "멀티툴(맥가이버 칼)", "bgm": "🎧 시원한 비트의 록 음악"},
-    "ISFP": {"place": "제주도 돌담길 & 감성 오션뷰 카페", "emoji": "🍊", "desc": "알람 없이 누워서 시작하는 하루! 걷다가 끌리는 카페에 들어가 파도 소리 들으며 유유자적 힐링 🌊", "mate": "ENFJ", "item": "📸 필름 카메라", "bgm": "🎧 인디 뮤지션의 몽환적인 노래"},
-    "INFP": {"place": "아이슬란드 오로라 몽환 돔 캠핑", "emoji": "🌌", "desc": "밤하늘에 쏟아지는 오로라 아래에서 낭만 1000% 충전! 상상 속 꿈꾸던 동화가 현실이 되는 곳 ❄️", "mate": "ENTJ", "item": "🧥 수분 촉촉 미스트", "bgm": "🎧 Lo-Fi 칠합 비트"},
-    "INTP": {"place": "일본 교토의 비밀 사찰 & 헌책방", "emoji": "🏮", "desc": "사람 없는 조용한 골목길 탐방! 홀로 호기심 탐구하며 신비로운 분위기를 만끽하기 ⛩️", "mate": "ESTJ", "item": "📖 두꺼운 소설책", "bgm": "🎧 빗소리와 재즈 피아노"},
-    "ESTP": {"place": "미국 라스베이거스 스트립 축제", "emoji": "🎰", "desc": "화려한 조명! 쉴 새 없이 터지는 이벤트! 온몸으로 에너지 느낄 준비 되셨나요? 🔥", "mate": "ISFJ", "item": "🕶️ 힙한 선글라스", "bgm": "🎧 신나는 EDM / 팝송"},
-    "ESFP": {"place": "스페인 바르셀로나 플라멩코 페스티벌", "emoji": "💃", "desc": "보는 사람도 춤추게 만드는 흥의 도시! 맛있는 타파스 먹으며 새로운 친구들과 짠~! 🥂", "mate": "ISTJ", "item": "🎉 블링블링 액세서리", "bgm": "🎧 라틴 팝 & 댄스곡"},
-    "ENFP": {"place": "발리 꾸따 해변 서핑 & 비치 파티", "emoji": "🏄‍♀️", "desc": "통통 튀는 텐션으로 파도 타기! 지나가는 모든 사람과 친구가 되는 기적을 경험해보세요 🌴", "mate": "INFJ", "item": "🎨 알록달록 비치타월", "bgm": "🎧 신나는 서프 록"},
-    "ENTP": {"place": "몽골 고비 사막 은하수 질주", "emoji": "🐪", "desc": "평범한 건 거부한다! 사막 위를 달리고 밤엔 은하수 텐트에서 차원이 다른 엉뚱발랄 경험하기 ✨", "mate": "INTJ", "item": "🧭 방위 컴퍼스", "bgm": "🎧 인디 록 & 시티팝"},
-    "ESTJ": {"place": "싱가포르 마리나베이 도심 호캉스", "emoji": "🏙️", "desc": "완벽하고 치밀한 동선, 5성급 호텔에서의 럭셔리함! 스마트하고 효율적인 완벽 투어 🇸🇬", "mate": "INTP", "item": "💳 혜택 좋은 트래블 카드", "bgm": "🎧 세련된 라운지 음악"},
-    "ESFJ": {"place": "베트남 다낭 프리미엄 리조트 먹방", "emoji": "🥭", "desc": "너 한 입 나 한 입! 다정하게 맛있는 음식 나누며 다 같이 우정 뿜뿜 추억 남기기 💗", "mate": "ISTP", "item": "🎁 모두 나눠줄 간식 주머니", "bgm": "🎧 훈훈한 K-POP 발라드"},
-    "ENFJ": {"place": "이탈리아 피렌체 로맨틱 골목길", "emoji": "🎨", "desc": "거리마다 따스함과 감성이 가득! 사랑하는 사람들에게 감동 선물해주고 인생샷 완성 🇮🇹", "mate": "ISFP", "item": "💌 예쁜 손편지지", "bgm": "🎧 감성 가득한 영화 OST"},
-    "ENTJ": {"place": "미국 뉴욕 맨해튼 헬기 투어", "emoji": "🗽", "desc": "빌딩 숲 한가운데서 도심을 내려다보는 열정! 야망과 도전을 가득 채우고 돌아올 거대한 여행 🌆", "mate": "INFP", "item": "💼 간지나는 명함집/수첩", "bgm": "🎧 웅장한 영화 트레일러 음악"}
-}
-
-# 4. 상단 헤더 뷰
+# 3. 메인 타이틀
 st.markdown("""
 <div class="title-box">
-    <h1 class="title-text">✨ 💖 MBTI 비밀 여행 가방 💖 ✨</h1>
-    <p class="sub-text">🔮 나만의 성격 유형을 넣으면, 찰떡궁합 여행지를 뿅하고 꺼내드려요! ( 🌟‿🌟 )</p>
+    <h1 class="main-title">🎀 내가 치이카와 캐릭터라면? 🎀</h1>
+    <p style="color: #8A2BE2; margin-top: 8px; font-weight: bold;">
+        질문을 고르고 나의 치이카와 본캐를 찾아보세요! ✨
+    </p>
 </div>
 """, unsafe_allow_html=True)
 
-# 5. 사용자 입력 섹션 (3컬럼 구조)
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    selected_mbti = st.selectbox(
-        "🎀 당신의 MBTI를 뽑아주세요!",
-        list(mbti_db.keys()),
-        index=6  # 기본값 INFP
-    )
-    
-    st.write("") # 간격 조정
-    start_button = st.button("✈️ 나만을 위한 여행 가방 싸기! ✨")
+# 4. 테스트 질문 폼
+with st.form("chiikawa_quiz"):
+    st.subheader("Q1. 주말에 약속이 갑자기 취소되었을 때 당신은?")
+    q1 = st.radio("", [
+        "오히려 좋아! 집에서 푹 쉬면서 조용히 힐링 🛋️",
+        "바로 긍정 파워! 다른 친구에게 연락해 나간다 📱",
+        "우라!! 소리 지르고 하고 싶던 딴짓을 마구 한다 💃",
+        "느긋하게 맛있는 안주나 간식을 세팅하고 혼술/혼밥 🍻",
+        "전문가답게 자기계발을 하거나 빡세게 운동을 한다 ⚔️",
+        "귀여운 나를 칭찬해 줄 사람을 찾아서 어슬렁거린다 🎀",
+        "침대에 누워서 침착하게 개소리(?) 영상이나 침투부를 본다 🛏️",
+        "인터넷 켜고 폼나게 관전하거나 악을 지른다 💥"
+    ], key="q1")
 
-# 6. 결과 출력 영역
-if start_button:
-    # 깜찍한 로딩 효과
-    with st.spinner("🎀 몽실몽실 여행 가방 싸는 중... 잠시만 기다려주세요! 🎀"):
-        time.sleep(0.7)
-    
-    # 팡팡 터지는 애니메이션 
+    st.divider()
+
+    st.subheader("Q2. 길 가다가 무서운 문제나 토벌 대상(괴물)을 만난다면?")
+    q2 = st.radio("", [
+        "으앙! 눈물 글썽이지만 용기를 쥐어짜서 맞선다 🥹",
+        "'어떻게든 될 거야!' 하고 밝게 웃으며 해결책을 찾는다 🐱",
+        "냅다 괴성을 지르며 몸으로 부딪쳐서 제압한다 🐰",
+        "경험자의 여유로 한 발짝 뒤에서 차분하게 대처한다 🌰",
+        "강력한 스승님 포스로 단칼에 빠르게 제압한다 🦦",
+        "남 뒤로 쏙 숨어서 귀여운 척으로 넘어가려고 한다 🐿️",
+        "킹받게 시비 걸다가 킹받는 표정으로 딴소리를 한다 👨‍🦲",
+        "피파 하다가 골 먹힌 것처럼 샷건 치고 소리 지른다 ⚽"
+    ], key="q2")
+
+    st.divider()
+
+    st.subheader("Q3. 내가 가장 바라는 완벽한 여행 스타일은?")
+    q3 = st.radio("", [
+        "조용하고 아기자기한 감성 카페 탐방 🍵",
+        "친구들과 맛있는 거 나눠먹고 수다 떠는 힐링 여행 🥐",
+        "어디로 튈지 모르는 스릴 만점 액티비티 🪂",
+        "풍경 좋은 곳에서 묵묵히 즐기는 미식 식도락 🍱",
+        "카리스마 넘치는 겉바속촉 디저트 탐방 🍰",
+        "내가 세상에서 제일 빛나는 핫플 럭셔리 여행 👑",
+        "킹받는 털보 빡빡이 친구와 둘이 떠나는 병맛 여행 👬",
+        "인방 텐션 200% 터지는 미친 아드레날린 여행 🔥"
+    ], key="q3")
+
+    st.write("")
+    submit = st.form_submit_button("✨ 나의 치이카와 본캐 결과 확인하기! ✨")
+
+# 5. 결과 점수 계산
+if submit:
     st.balloons()
-    st.snow()
     
-    data = mbti_db[selected_mbti]
+    score = {
+        "치이카와": 0, "하치와레": 0, "우사기": 0, "크리만쥬": 0,
+        "랏코": 0, "모몽가": 0, "침주": 0, "감스트": 0
+    }
     
-    # 예쁜 커스텀 디자인 카드 출력
-    st.markdown(f"""
-    <div class="result-card">
-        <div style="font-size: 4rem;">{data['emoji']}</div>
-        <div class="place-title">[{selected_mbti}] {data['place']}</div>
-        <div class="desc-text">{data['desc']}</div>
-        
-        <div class="tag-container">
-            <div class="tag">💘 찰떡 메이트: {data['mate']}</div>
-            <div class="tag">🎒 행운 아이템: {data['item']}</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
+    # Q1
+    if "푹 쉬면서" in q1: score["치이카와"] += 1
+    elif "다른 친구" in q1: score["하치와레"] += 1
+    elif "우라!!" in q1: score["우사기"] += 1
+    elif "혼술" in q1: score["크리만쥬"] += 1
+    elif "자기계발" in q1: score["랏코"] += 1
+    elif "칭찬해 줄" in q1: score["모몽가"] += 1
+    elif "침착하게" in q1: score["침주"] += 3
+    elif "관전하거나" in q1: score["감스트"] += 3
+
+    # Q2
+    if "눈물" in q2: score["치이카와"] += 1
+    elif "어떻게든" in q2: score["하치와레"] += 1
+    elif "몸으로 부딪쳐" in q2: score["우사기"] += 1
+    elif "차분하게" in q2: score["크리만쥬"] += 1
+    elif "단칼에" in q2: score["랏코"] += 1
+    elif "귀여운 척" in q2: score["모몽가"] += 1
+    elif "킹받게" in q2: score["침주"] += 3
+    elif "피파" in q2: score["감스트"] += 3
+
+    # Q3
+    if "감성 카페" in q3: score["치이카와"] += 1
+    elif "친구들과" in q3: score["하치와레"] += 1
+    elif "액티비티" in q3: score["우사기"] += 1
+    elif "식도락" in q3: score["크리만쥬"] += 1
+    elif "디저트" in q3: score["랏코"] += 1
+    elif "핫플" in q3: score["모몽가"] += 1
+    elif "병맛" in q3: score["침주"] += 3
+    elif "감스트" in q3: score["감스트"] += 3
+
+    best_char = max(score, key=score.get)
+
     st.write("")
     
-    # 추가 깜찍 요소: 음악 추천 & 럭키 쿠키
-    c1, c2 = st.columns(2)
-    with c1:
-        st.info(f"🎵 **추천 여행 BGM**\n\n{data['bgm']}")
-    with c2:
-        cookie_msg = [
-            "맛있는 디저트 먹을 운명이 보여요! 🍰",
-            "인생샷 100장 건질 수 있어요! 📸",
-            "생각지도 못한 귀여운 인연을 만날 거예요! 🐾",
-            "여행지에서 득템할 운명이에요! 🎁"
-        ]
-        st.success(f"🥠 **오늘의 여행 포춘쿠키**\n\n{random.choice(cookie_msg)}")
+    # 6. 캐릭터별 결과 카드 출력
+    if best_char == "치이카와":
+        st.markdown("""
+        <div class="result-card">
+            <div style="font-size: 5rem;">🥹</div>
+            <h2 style="color:#FF69B4;">겁 많지만 용기 있는 '치이카와'</h2>
+            <p style="color:#666;">당신은 마음이 부드럽고 순수한 사랑둥이! 겁이 많아 눈물도 자주 흘리지만, 소중한 친구를 위해서라면 끝까지 용기를 내는 멋진 사람이에요.</p>
+            <hr style="border:1px dashed #FFC0CB;">
+            <p>✈️ <b>추천 찰떡 여행지:</b> 따뜻한 정이 있는 전주 한옥마을 🍡</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    elif best_char == "하치와레":
+        st.markdown("""
+        <div class="result-card">
+            <div style="font-size: 5rem;">🐱</div>
+            <h2 style="color:#4169E1;">'어떻게든 될 거야!' 긍정왕 '하치와레'</h2>
+            <p style="color:#666;">어떤 어려움이 와도 '어떻게든 될 거야!'를 외치는 초긍정 사교왕! 친구를 진심으로 아끼고 주변에 행복한 바이러스를 전파해요.</p>
+            <hr style="border:1px dashed #FFC0CB;">
+            <p>✈️ <b>추천 찰떡 여행지:</b> 에너지가 넘치는 발리 해변 🏄‍♂️</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    elif best_char == "우사기":
+        st.markdown("""
+        <div class="result-card">
+            <div style="font-size: 5rem;">🐰</div>
+            <h2 style="color:#FFD700;">자유로운 영혼의 광기 '우사기'</h2>
+            <p style="color:#666;">우라?! 야하-!! 남들 시선은 전혀 신경 쓰지 않는 미친 텐션의 자유로운 영혼! 예측 불가능하지만 알고 보면 능률 최강자예요.</p>
+            <hr style="border:1px dashed #FFC0CB;">
+            <p>✈️ <b>추천 찰떡 여행지:</b> 24시간 핫한 미국 라스베이거스 🎰</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    elif best_char == "크리만쥬":
+        st.markdown("""
+        <div class="result-card">
+            <div style="font-size: 5rem;">🌰</div>
+            <h2 style="color:#D2691E;">캬-! 낭만을 아는 미식가 '크리만쥬'</h2>
+            <p style="color:#666;">말없이 묵묵하지만 주변을 은근히 챙겨주는 어른스러운 스타일! 시원한 음료와 맛있는 안주 하나면 세상을 다 가진 듯 힐링하는 감성파입니다.</p>
+            <hr style="border:1px dashed #FFC0CB;">
+            <p>✈️ <b>추천 찰떡 여행지:</b> 운치 있는 일본 교토의 선술집 🍺</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    elif best_char == "랏코":
+        st.markdown("""
+        <div class="result-card">
+            <div style="font-size: 5rem;">🦦</div>
+            <h2 style="color:#4682B4;">카리스마 속 반전 귀여움 '랏코 스승님'</h2>
+            <p style="color:#666;">토벌 순위 1위의 엄청난 실력자! 겉은 쿨하고 카리스마 넘치지만 달콤한 파페를 좋아하는 엄청난 반전 매력의 소유자군요.</p>
+            <hr style="border:1px dashed #FFC0CB;">
+            <p>✈️ <b>추천 찰떡 여행지:</b> 스위스의 장엄한 대자연 🏔️</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    elif best_char == "모몽가":
+        st.markdown("""
+        <div class="result-card">
+            <div style="font-size: 5rem;">🐿️</div>
+            <h2 style="color:#87CEEB;">칭찬해라!! 귀염둥이 떼쟁이 '모몽가'</h2>
+            <p style="color:#666;">귀여움 하나로 세상을 정복하려는 욕망의 덩어리! 남들에게 오냐오냐 칭찬받는 걸 세상에서 제일 좋아하는 솔직 뻔뻔 사랑둥이예요.</p>
+            <hr style="border:1px dashed #FFC0CB;">
+            <p>✈️ <b>추천 찰떡 여행지:</b> 인생샷 천국 싱가포르 호캉스 🏙️</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # 🚨 히든 낚시 결과 1: 침착맨과 주호민
+    elif best_char == "침주":
+        st.markdown("""
+        <div class="result-card" style="border: 4px solid #FF4500;">
+            <div style="font-size: 5rem;">👨‍🦲🧔‍♂️</div>
+            <h1 style="color:#FF4500; font-size: 1.8rem;">🚨 [대반전 낚시 성공!] 🚨</h1>
+            <h2 style="color:#333;">당신은 치이카와가 아니라... '침착맨 & 주호민'입니다!</h2>
+            <p style="color:#555;">
+                치이카와 세상인 줄 알고 들어왔겠지만... 당신 안에 숨어있던 <b>킹받음과 털보+빡빡이 케미</b>가 폭발하고 말았습니다!<br>
+                침투부 특유의 킹받는 텐션과 논리로 주변 사람을 킹받게 만드는 천재적인 재능을 가졌군요.
+            </p>
+            <hr style="border:1px dashed #FF4500;">
+            <p>🎒 <b>필수 아이템:</b> 고피자 세트 & 킹받는 짤</p>
+            <p>✈️ <b>추천 찰떡 여행지:</b> 침착맨 스트리밍 방구석 1열 🛏️</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # 🚨 히든 낚시 결과 2: 감스트
+    elif best_char == "감스트":
+        st.markdown("""
+        <div class="result-card" style="border: 4px solid #1E90FF;">
+            <div style="font-size: 5rem;">⚽💥</div>
+            <h1 style="color:#1E90FF; font-size: 1.8rem;">💥 [대반전 낚시 성공!] 💥</h1>
+            <h2 style="color:#333;">당신은 치이카와가 아니라... '감스트'입니다!</h2>
+            <p style="color:#555;">
+                귀여운 척 속였지만 속일 수 없는 <b>책상 샷건과 소리 지르기 텐션</b>!!<br>
+                관전하다가 소리 지르고 리액션 뿜뿜하는 당신이야말로 인방계의 진정한 감스트 캐릭터입니다!
+            </p>
+            <hr style="border:1px dashed #1E90FF;">
+            <p>🎒 <b>필수 아이템:</b> 튼튼한 책상 (샷건용) & 피파 카드팩</p>
+            <p>✈️ <b>추천 찰떡 여행지:</b> 영국 프리미어리그 축구 직관 현장 ⚽</p>
+        </div>
+        """, unsafe_allow_html=True)
